@@ -21,7 +21,7 @@ export default async function RankingsPage({
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Rankings</h1>
           <p className="text-gray-600 dark:text-gray-300">
-            Top 100 repositórios por {filter === 'stars' ? 'estrelas' : filter === 'forks' ? 'forks' : 'visualizações'}
+            Top repositórios por {filter === 'stars' ? 'estrelas' : filter === 'forks' ? 'forks' : 'visualizações'}
           </p>
         </div>
 
@@ -29,7 +29,7 @@ export default async function RankingsPage({
           <RankingsFilters currentFilter={filter} />
         </Suspense>
 
-        <RankingsTable rankings={rankings} currentFilter={filter} />
+        <RankingsTable initialRankings={rankings} currentFilter={filter} />
       </div>
     </div>
   )

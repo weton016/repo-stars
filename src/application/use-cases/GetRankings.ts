@@ -18,7 +18,7 @@ export class GetRankings {
 
     const { data, error } = await query
       .order(filter, { ascending: false })
-      .limit(100)
+      .limit(15)
 
     if (error) throw new Error(`Failed to fetch rankings: ${error.message}`)
 

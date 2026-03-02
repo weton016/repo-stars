@@ -63,7 +63,7 @@ export default async function HomePage({
         <div id="rankings-section" className="mb-8">
           <h2 className="text-3xl font-bold mb-6">Top Repositórios</h2>
           <RankingsFilters currentFilter={filter} />
-          <RankingsTable rankings={rankings} currentFilter={filter} />
+          <RankingsTable initialRankings={rankings} currentFilter={filter} />
         </div>
       </div>
     </div>

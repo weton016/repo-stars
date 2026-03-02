@@ -15,7 +15,7 @@ export function SyncRepositoriesButton() {
         provider: 'github',
         options: {
           redirectTo: `${window.location.origin}/api/auth/callback?auto_sync=true`,
-          scopes: 'repo write:repo_hook',
+          scopes: 'public_repo write:repo_hook', // Apenas repositórios públicos
         },
       })
 

@@ -12,7 +12,7 @@ export function LoginButton() {
       provider: 'github',
       options: {
         redirectTo: `${window.location.origin}/api/auth/callback`,
-        scopes: 'repo write:repo_hook', // Escopos necessários para criar webhooks
+        scopes: 'public_repo write:repo_hook', // Apenas repositórios públicos
       },
     })
 
