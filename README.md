@@ -1,109 +1,215 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# GitHub Repos Ranking
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+Backend para ranking de repositórios GitHub usando Next.js 15, Supabase e GitHub OAuth/Webhooks.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+## Arquitetura
 
-## Features
+Este projeto segue Domain-Driven Design (DDD) com separação clara entre:
+- **Domain**: Entidades, Value Objects e Interfaces de Repositório
+- **Application**: Casos de Uso e DTOs
+- **Infrastructure**: Implementações de repositórios e clientes externos
+- **API**: Rotas Next.js App Router
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Proxy
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+## Setup
 
-## Demo
+### 1. Instalar dependências
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+```bash
+npm install
+```
 
-## Deploy to Vercel
+### 2. Configurar Supabase
 
-Vercel deployment will guide you through creating a Supabase account and project.
-
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
-
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
-
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
-
-## Clone and run locally
-
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
-
-2. Create a Next.js app using the Supabase Starter template npx command
-
+1. Crie um projeto no [Supabase](https://supabase.com)
+2. **Instale o Supabase CLI** (se ainda não tiver):
    ```bash
-   npx create-next-app --example with-supabase with-supabase-app
+   npm install -g supabase
+   # ou
+   brew install supabase/tap/supabase
    ```
 
+3. **Link o projeto local com o Supabase remoto**:
    ```bash
-   yarn create next-app --example with-supabase with-supabase-app
+   supabase link --project-ref seu-project-ref
+   ```
+   - Você precisará do **Project Ref** (encontrado na URL do dashboard: `https://supabase.com/dashboard/project/[project-ref]`)
+   - E do **Database Password** (definido ao criar o projeto)
+
+4. **Aplicar migrations (schema) ao banco remoto**:
+   ```bash
+   supabase db push
+   ```
+   Isso aplicará todas as migrations em `supabase/migrations/` ao seu projeto Supabase.
+
+   **Alternativa manual**: Se preferir, você pode executar o `schema.sql` diretamente no SQL Editor do Supabase.
+
+5. Configure GitHub OAuth:
+
+   **No GitHub:**
+   - Vá em [GitHub Settings > Developer settings > OAuth Apps](https://github.com/settings/developers)
+   - Crie um novo OAuth App
+   - **Authorization callback URL**: `https://[seu-project-ref].supabase.co/auth/v1/callback`
+     - Substitua `[seu-project-ref]` pelo ID do seu projeto Supabase (encontrado na URL do dashboard)
+   - Copie o **Client ID** e **Client Secret**
+
+   **No Supabase:**
+   - Vá em Authentication > Providers > GitHub
+   - Cole o Client ID e Client Secret
+   - Em Authentication > URL Configuration:
+     - **Site URL**: `http://localhost:3000` (dev) ou `https://seu-projeto.vercel.app` (prod)
+     - **Redirect URLs**: Adicione:
+       - `http://localhost:3000/api/auth/callback`
+       - `https://seu-projeto.vercel.app/api/auth/callback`
+
+### 3. Configurar variáveis de ambiente
+
+Copie `.env.example` para `.env.local` e preencha:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+GITHUB_WEBHOOK_SECRET=random_secret_string
+CRON_SECRET=random_secret_string
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+**Como gerar os secrets:**
+
+1. **GITHUB_WEBHOOK_SECRET**: 
+   ```bash
+   openssl rand -hex 32
+   ```
+   - Este secret é usado para validar que os webhooks realmente vêm do GitHub
+   - O código já usa essa variável ao criar webhooks automaticamente (não precisa configurar manualmente no GitHub)
+   - **Importante**: Use a mesma string em produção e desenvolvimento
+
+2. **CRON_SECRET**:
+   ```bash
+   openssl rand -hex 32
+   ```
+   - Secret para proteger o endpoint de cron job da Vercel
+
+### 4. Executar o projeto
+
+```bash
+npm run dev
+```
+
+## Estrutura do Projeto
+
+```
+src/
+├── domain/           # Camada de domínio
+│   ├── entities/     # Entidades de negócio
+│   ├── value-objects/# Value Objects
+│   └── repositories/ # Interfaces de repositório
+├── application/      # Camada de aplicação
+│   ├── use-cases/    # Casos de uso
+│   └── dtos/         # Data Transfer Objects
+├── infra/            # Camada de infraestrutura
+│   ├── db/           # Implementações de repositório
+│   └── github/       # Cliente GitHub
+└── app/              # Next.js App Router
+    └── api/          # API Routes
+```
+
+## API Endpoints
+
+### Autenticação
+- `GET /api/auth/callback` - Callback do OAuth GitHub
+
+### Repositórios
+- `POST /api/repositories/sync` - Sincronizar repositórios do usuário
+
+### Webhooks
+- `POST /api/webhooks/github` - Receber eventos do GitHub
+
+### Rankings
+- `GET /api/rankings?filter=stars` - Buscar rankings (filter: stars, forks, views)
+
+### Cron
+- `GET /api/cron/sync-views` - Sincronizar views (protegido por CRON_SECRET)
+
+## Funcionalidades
+
+- **Autenticação**: OAuth com GitHub via Supabase
+- **Sincronização**: Busca repositórios públicos do usuário e cria webhooks automaticamente
+- **Webhooks**: Recebe atualizações em tempo real de stars/forks (validação de assinatura automática)
+- **Snapshots**: Histórico imutável para cálculo de crescimento MoM
+- **Rankings**: Visualização pública de rankings com filtros
+- **Cron Job**: Sincronização diária de views (3h da manhã)
+
+## Como funciona o GITHUB_WEBHOOK_SECRET
+
+O `GITHUB_WEBHOOK_SECRET` **não é gerado automaticamente** - você precisa criá-lo manualmente:
+
+1. **Gere uma string aleatória**:
+   ```bash
+   openssl rand -hex 32
    ```
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
+2. **Adicione no `.env.local`**:
+   ```env
+   GITHUB_WEBHOOK_SECRET=sua_string_gerada_aqui
    ```
 
-3. Use `cd` to change into the app's directory
+3. **Como funciona**:
+   - Quando você sincroniza repositórios (`POST /api/repositories/sync`), o código **automaticamente cria webhooks** no GitHub usando esse secret
+   - Quando o GitHub envia eventos, o código **valida a assinatura** usando o mesmo secret
+   - Isso garante que apenas eventos legítimos do GitHub sejam processados
 
-   ```bash
-   cd with-supabase-app
-   ```
+4. **Importante**:
+   - Use a **mesma string** em desenvolvimento e produção
+   - Mantenha o secret seguro (não commite no git)
+   - Se mudar o secret, você precisará recriar os webhooks (deletar e criar novamente)
 
-4. Rename `.env.example` to `.env.local` and update the following:
+## Decisões de Design
 
-  ```env
-  NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
-  ```
-  > [!NOTE]
-  > This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-  > Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-  > See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
+- **Imutabilidade**: Entidades retornam novas instâncias ao invés de mutar
+- **Snapshots imutáveis**: Cada evento cria um novo snapshot
+- **Validação segura**: `timingSafeEqual` para webhooks
+- **MoM no banco**: Cálculo via SQL view para performance
 
-  Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+## Deploy
 
-5. You can now run the Next.js local development server:
+O projeto está configurado para deploy na Vercel:
 
-   ```bash
-   npm run dev
-   ```
+1. Conecte o repositório à Vercel
+2. Configure as variáveis de ambiente
+3. O cron job será configurado automaticamente via `vercel.json`
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+## Schema SQL
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+O schema está disponível em:
+- `schema.sql` - Para referência ou execução manual
+- `supabase/migrations/20260301160623_initial_schema.sql` - Migration do Supabase CLI
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+### Comandos Supabase CLI
 
-## Feedback and issues
+```bash
+# Inicializar projeto (já feito)
+supabase init
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+# Link com projeto remoto
+supabase link --project-ref seu-project-ref
 
-## More Supabase examples
+# Aplicar migrations ao banco remoto
+supabase db push
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+# Ver status das migrations
+supabase migration list
+
+# Criar nova migration
+supabase migration new nome_da_migration
+
+# Aplicar migrations localmente (para desenvolvimento)
+supabase start
+supabase db reset
+```
+
+### Estrutura de Migrations
+
+As migrations ficam em `supabase/migrations/` e são aplicadas em ordem cronológica. Use `supabase db push` para aplicar ao banco remoto.
+
