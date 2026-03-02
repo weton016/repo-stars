@@ -7,12 +7,13 @@ import { Suspense } from 'react'
 export default async function RankingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>
+  searchParams: Promise<{ filter?: string; search?: string }>
 }) {
   const params = await searchParams
   const filter = (params.filter || 'stars') as RankingFilter
+  const search = params.search
   const useCase = new GetRankings()
-  const rankings = await useCase.execute(filter)
+  const rankings = await useCase.execute(filter, search)
 
   return (
     <div className="min-h-screen p-8">
@@ -28,7 +29,7 @@ export default async function RankingsPage({
           <RankingsFilters currentFilter={filter} />
         </Suspense>
 
-        <RankingsTable rankings={rankings} />
+        <RankingsTable rankings={rankings} currentFilter={filter} />
       </div>
     </div>
   )

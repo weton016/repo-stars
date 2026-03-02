@@ -4,12 +4,19 @@ import { RankingItemDTO } from '../dtos/RankingItemDTO'
 export type RankingFilter = 'stars' | 'forks' | 'views'
 
 export class GetRankings {
-  async execute(filter: RankingFilter): Promise<RankingItemDTO[]> {
+  async execute(filter: RankingFilter, search?: string): Promise<RankingItemDTO[]> {
     const supabase = await createClient()
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('repository_rankings')
       .select('*')
+
+    // Aplicar filtro de busca se fornecido
+    if (search && search.trim()) {
+      query = query.or(`name.ilike.%${search}%,full_name.ilike.%${search}%,github_username.ilike.%${search}%`)
+    }
+
+    const { data, error } = await query
       .order(filter, { ascending: false })
       .limit(100)
 

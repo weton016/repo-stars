@@ -1,6 +1,11 @@
 import { RankingItemDTO } from '@/application/dtos/RankingItemDTO'
 
-export function RankingsTable({ rankings }: { rankings: RankingItemDTO[] }) {
+interface RankingsTableProps {
+  rankings: RankingItemDTO[]
+  currentFilter: 'stars' | 'forks' | 'views'
+}
+
+export function RankingsTable({ rankings, currentFilter }: RankingsTableProps) {
   if (rankings.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
@@ -113,17 +118,21 @@ export function RankingsTable({ rankings }: { rankings: RankingItemDTO[] }) {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <div className="flex flex-col">
-                    <span className={item.starsMom > 0 ? 'text-green-600' : item.starsMom < 0 ? 'text-red-600' : ''}>
-                      Stars: {item.starsMom > 0 ? '+' : ''}{item.starsMom.toFixed(1)}%
+                  {currentFilter === 'stars' && (
+                    <span className={item.starsMom > 0 ? 'text-green-600' : item.starsMom < 0 ? 'text-red-600' : 'text-gray-500'}>
+                      {item.starsMom > 0 ? '+' : ''}{item.starsMom.toFixed(1)}%
                     </span>
-                    <span className={item.forksMom > 0 ? 'text-green-600' : item.forksMom < 0 ? 'text-red-600' : ''}>
-                      Forks: {item.forksMom > 0 ? '+' : ''}{item.forksMom.toFixed(1)}%
+                  )}
+                  {currentFilter === 'forks' && (
+                    <span className={item.forksMom > 0 ? 'text-green-600' : item.forksMom < 0 ? 'text-red-600' : 'text-gray-500'}>
+                      {item.forksMom > 0 ? '+' : ''}{item.forksMom.toFixed(1)}%
                     </span>
-                    <span className={item.viewsMom > 0 ? 'text-green-600' : item.viewsMom < 0 ? 'text-red-600' : ''}>
-                      Views: {item.viewsMom > 0 ? '+' : ''}{item.viewsMom.toFixed(1)}%
+                  )}
+                  {currentFilter === 'views' && (
+                    <span className={item.viewsMom > 0 ? 'text-green-600' : item.viewsMom < 0 ? 'text-red-600' : 'text-gray-500'}>
+                      {item.viewsMom > 0 ? '+' : ''}{item.viewsMom.toFixed(1)}%
                     </span>
-                  </div>
+                  )}
                 </td>
               </tr>
             ))}

@@ -6,30 +6,31 @@ import { createServiceClient } from '@/lib/supabase/service'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  const autoSync = searchParams.get('auto_sync') === 'true'
 
   if (!code) {
     return NextResponse.redirect(`${origin}/auth/error`)
   }
 
-    const cookieStore = await cookies()
+  const cookieStore = await cookies()
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-          set(name: string, value: string, options: CookieOptions) {
-            cookieStore.set({ name, value, ...options })
-          },
-          remove(name: string, options: CookieOptions) {
-            cookieStore.delete({ name, ...options })
-          },
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
         },
-      }
-    )
+        set(name: string, value: string, options: CookieOptions) {
+          cookieStore.set({ name, value, ...options })
+        },
+        remove(name: string, options: CookieOptions) {
+          cookieStore.delete({ name, ...options })
+        },
+      },
+    }
+  )
 
   const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
@@ -47,5 +48,10 @@ export async function GET(request: Request) {
     github_access_token: data.session.provider_token, // Este é o access_token do GitHub
   }, { onConflict: 'id' })
 
-  return NextResponse.redirect(`${origin}/dashboard`)
+  // Se auto_sync estiver ativado, redirecionar para sync e depois para dashboard
+  if (autoSync) {
+    return NextResponse.redirect(`${origin}/api/auth/callback/sync?redirect=${encodeURIComponent(`${origin}`)}`)
+  }
+
+  return NextResponse.redirect(`${origin}`)
 }
