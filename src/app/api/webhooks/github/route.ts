@@ -3,7 +3,7 @@ import { GithubWebhookValidator } from '@/infra/github/GithubWebhookValidator'
 import { HandleWebhookEvent } from '@/application/use-cases/HandleWebhookEvent'
 import { SupabaseRepositoryRepository } from '@/infra/db/SupabaseRepositoryRepository'
 import { SupabaseSnapshotRepository } from '@/infra/db/SupabaseSnapshotRepository'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text()
@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
 
   const payload = JSON.parse(rawBody)
 
-  // Use service client for webhooks (no authenticated user)
-  const serviceClient = await createClient()
+  // Use service client for webhooks (no authenticated user, needs to bypass RLS)
+  const serviceClient = createServiceClient()
   const useCase = new HandleWebhookEvent(
     new SupabaseRepositoryRepository(serviceClient),
     new SupabaseSnapshotRepository(serviceClient),
