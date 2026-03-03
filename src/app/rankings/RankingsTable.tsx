@@ -12,7 +12,8 @@ interface RankingsTableProps {
 export function RankingsTable({ initialRankings, currentFilter }: RankingsTableProps) {
   const [rankings, setRankings] = useState<RankingItemDTO[]>(initialRankings)
   const [loading, setLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
+  // Inicializa hasMore baseado no número de itens iniciais
+  const [hasMore, setHasMore] = useState(initialRankings.length >= 15)
   const [page, setPage] = useState(1)
   const observerTarget = useRef<HTMLTableRowElement>(null)
   const searchParams = useSearchParams()
@@ -32,19 +33,33 @@ export function RankingsTable({ initialRankings, currentFilter }: RankingsTableP
       }
 
       const response = await fetch(`/api/rankings?${params.toString()}`)
-      if (!response.ok) throw new Error('Failed to load rankings')
+      if (!response.ok) {
+        setHasMore(false)
+        throw new Error('Failed to load rankings')
+      }
 
       const data = await response.json()
+      
+      // Se não retornou rankings ou retornou array vazio, não há mais dados
+      if (!data.rankings || data.rankings.length === 0) {
+        setHasMore(false)
+        setLoading(false)
+        return
+      }
+      
       setRankings((prev) => {
         // Remove duplicatas baseado em fullName
         const existingFullNames = new Set(prev.map(r => r.fullName))
         const newRankings = data.rankings.filter((r: RankingItemDTO) => !existingFullNames.has(r.fullName))
         return [...prev, ...newRankings]
       })
-      setHasMore(data.hasMore)
+      
+      // Atualiza hasMore baseado na resposta e se realmente adicionou novos itens
+      setHasMore(data.hasMore === true && data.rankings.length > 0)
       setPage((prev) => prev + 1)
     } catch (error) {
       console.error('Error loading more rankings:', error)
+      setHasMore(false)
     } finally {
       setLoading(false)
     }
@@ -58,10 +73,17 @@ export function RankingsTable({ initialRankings, currentFilter }: RankingsTableP
     )
     setRankings(uniqueRankings)
     setPage(1)
-    setHasMore(true)
+    
+    // Se temos exatamente 15 itens, provavelmente há mais dados
+    // Se temos menos, provavelmente não há mais
+    // Mas vamos verificar na primeira chamada de loadMore se necessário
+    setHasMore(uniqueRankings.length >= 15)
   }, [currentFilter, search, initialRankings])
 
   useEffect(() => {
+    // Só observar se realmente há mais dados para carregar
+    if (!hasMore) return
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
