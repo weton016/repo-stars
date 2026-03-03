@@ -35,7 +35,7 @@ export class GithubApiClient {
   }
 
   async createWebhook(owner: string, repo: string, webhookUrl: string): Promise<{ id: number }> {
-    return this.fetch<{ id: number }>(`/repos/${owner}/${repo}/hooks`, {
+    const response = await this.fetch<any>(`/repos/${owner}/${repo}/hooks`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -51,6 +51,15 @@ export class GithubApiClient {
         active: true,
       }),
     })
+
+    console.log(`GitHub webhook response for ${owner}/${repo}:`, JSON.stringify(response, null, 2))
+
+    // A resposta do GitHub pode ter 'id' como número
+    if (!response.id) {
+      throw new Error(`Webhook response missing id: ${JSON.stringify(response)}`)
+    }
+
+    return { id: response.id }
   }
 
   async deleteWebhook(owner: string, repo: string, hookId: number): Promise<void> {

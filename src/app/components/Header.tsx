@@ -6,6 +6,10 @@ export async function Header() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Só exibe a navbar se o usuário estiver logado
+  if (!user) {
+    return null
+  }
 
   return (
     <header className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -20,24 +24,13 @@ export async function Header() {
           >
             Rankings
           </Link>
-          {user ? (
-            <>
-              <Link
-                href="/dashboard"
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                Dashboard
-              </Link>
-              <SignOutButton />
-            </>
-          ) : (
-            <Link
-              href="/"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Entrar
-            </Link>
-          )}
+          <Link
+            href="/dashboard"
+            className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          >
+            Dashboard
+          </Link>
+          <SignOutButton />
         </nav>
       </div>
     </header>

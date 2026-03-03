@@ -108,15 +108,21 @@ export function RankingsTable({ initialRankings, currentFilter }: RankingsTableP
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Autor
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Stars
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Forks
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Views
-              </th>
+              {currentFilter === 'stars' && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Stars
+                </th>
+              )}
+              {currentFilter === 'forks' && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Forks
+                </th>
+              )}
+              {currentFilter === 'views' && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Views
+                </th>
+              )}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 MoM Growth
               </th>
@@ -152,48 +158,57 @@ export function RankingsTable({ initialRankings, currentFilter }: RankingsTableP
                     <span className="text-sm">{item.githubUsername}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    <span>⭐ {item.stars.toLocaleString()}</span>
-                    {item.starsMom !== 0 && (
-                      <span
-                        className={`text-xs ${
-                          item.starsMom > 0 ? 'text-green-600' : 'text-red-600'
-                        }`}
-                      >
-                        ({item.starsMom > 0 ? '+' : ''}{item.starsMom.toFixed(1)}%)
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    <span>🍴 {item.forks.toLocaleString()}</span>
-                    {item.forksMom !== 0 && (
-                      <span
-                        className={`text-xs ${
-                          item.forksMom > 0 ? 'text-green-600' : 'text-red-600'
-                        }`}
-                      >
-                        ({item.forksMom > 0 ? '+' : ''}{item.forksMom.toFixed(1)}%)
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    <span>{item.views.toLocaleString()}</span>
-                    {item.viewsMom !== 0 && (
-                      <span
-                        className={`text-xs ${
-                          item.viewsMom > 0 ? 'text-green-600' : 'text-red-600'
-                        }`}
-                      >
-                        ({item.viewsMom > 0 ? '+' : ''}{item.viewsMom.toFixed(1)}%)
-                      </span>
-                    )}
-                  </div>
-                </td>
+                {currentFilter === 'stars' && (
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <span>⭐ {item.stars.toLocaleString()}</span>
+                      {item.starsMom !== 0 && (
+                        <span
+                          className={`text-xs ${
+                            item.starsMom > 0 ? 'text-green-600' : 'text-red-600'
+                          }`}
+                        >
+                          ({item.starsMom > 0 ? '+' : ''}{item.starsMom.toFixed(1)}%)
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                )}
+                {currentFilter === 'forks' && (
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251 2.251 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878zm3.75 7.378a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm3-8.75a.75.75 0 100-1.5.75.75 0 000 1.5z"/>
+                      </svg>
+                      <span>{item.forks.toLocaleString()}</span>
+                      {item.forksMom !== 0 && (
+                        <span
+                          className={`text-xs ${
+                            item.forksMom > 0 ? 'text-green-600' : 'text-red-600'
+                          }`}
+                        >
+                          ({item.forksMom > 0 ? '+' : ''}{item.forksMom.toFixed(1)}%)
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                )}
+                {currentFilter === 'views' && (
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <span>{item.views.toLocaleString()}</span>
+                      {item.viewsMom !== 0 && (
+                        <span
+                          className={`text-xs ${
+                            item.viewsMom > 0 ? 'text-green-600' : 'text-red-600'
+                          }`}
+                        >
+                          ({item.viewsMom > 0 ? '+' : ''}{item.viewsMom.toFixed(1)}%)
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                )}
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   {currentFilter === 'stars' && (
                     <span className={item.starsMom > 0 ? 'text-green-600' : item.starsMom < 0 ? 'text-red-600' : 'text-gray-500'}>
@@ -215,7 +230,7 @@ export function RankingsTable({ initialRankings, currentFilter }: RankingsTableP
             ))}
             {hasMore && (
               <tr ref={observerTarget}>
-                <td colSpan={7} className="px-6 py-4 text-center">
+                <td colSpan={5} className="px-6 py-4 text-center">
                   {loading && (
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
