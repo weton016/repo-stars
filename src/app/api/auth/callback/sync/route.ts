@@ -8,13 +8,14 @@ import { createServiceClient } from '@/lib/supabase/service'
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams
-  const redirectTo = searchParams.get('redirect') || '/dashboard'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin
+  const redirectTo = searchParams.get('redirect') || `${appUrl}/dashboard`
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
-    return NextResponse.redirect(new URL('/?error=auth_failed', req.url))
+    return NextResponse.redirect(`${appUrl}/?error=auth_failed&details=User not found after sync callback`)
   }
 
   // Usar service client para bypassar RLS e garantir acesso à tabela users
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
     .single()
 
   if (!userRow?.github_access_token) {
-    return NextResponse.redirect(new URL('/?error=no_token', req.url))
+    return NextResponse.redirect(`${appUrl}/?error=no_token&details=GitHub access token not found for user`)
   }
 
   try {
@@ -44,6 +45,6 @@ export async function GET(req: NextRequest) {
     // Continuar mesmo se houver erro na sincronização
   }
 
-  return NextResponse.redirect(new URL(redirectTo, req.url))
+  return NextResponse.redirect(redirectTo)
 }
 

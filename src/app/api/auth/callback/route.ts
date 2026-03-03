@@ -4,12 +4,13 @@ import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
   const autoSync = searchParams.get('auto_sync') === 'true'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/auth/error`)
+    return NextResponse.redirect(`${appUrl}/auth/error`)
   }
 
   const cookieStore = await cookies()
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
   const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
   if (error || !data.session) {
-    return NextResponse.redirect(`${origin}/auth/error`)
+    return NextResponse.redirect(`${appUrl}/auth/error`)
   }
 
   // Salvar o access_token do GitHub na tabela users
@@ -50,8 +51,8 @@ export async function GET(request: Request) {
 
   // Se auto_sync estiver ativado, redirecionar para sync e depois para dashboard
   if (autoSync) {
-    return NextResponse.redirect(`${origin}/api/auth/callback/sync?redirect=${encodeURIComponent(`${origin}`)}`)
+    return NextResponse.redirect(`${appUrl}/api/auth/callback/sync?redirect=${encodeURIComponent(`${appUrl}`)}`)
   }
 
-  return NextResponse.redirect(`${origin}`)
+  return NextResponse.redirect(`${appUrl}`)
 }

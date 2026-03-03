@@ -11,10 +11,11 @@ export function SyncRepositoriesButton() {
     
     try {
       const supabase = createClient()
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback?auto_sync=true`,
+          redirectTo: `${appUrl}/api/auth/callback?auto_sync=true`,
           scopes: 'public_repo write:repo_hook', // Apenas repositórios públicos
         },
       })
